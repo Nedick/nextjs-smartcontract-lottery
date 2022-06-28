@@ -15,7 +15,11 @@ export default function LotteryEntrance() {
 
     const dispatch = useNotification()
 
-    const { runContractFunction: enterRaffle } = useWeb3Contract({
+    const {
+        runContractFunction: enterRaffle,
+        isLoading,
+        isFetching,
+    } = useWeb3Contract({
         abi: abi,
         contractAddress: raffleAddress, // specify the networkId
         functionName: "enterRaffle",
@@ -76,23 +80,32 @@ export default function LotteryEntrance() {
     }
 
     return (
-        <div>
+        <div className="p-5">
             Hi from lottery entrance!
             {raffleAddress ? (
                 <div>
                     <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-auto"
                         onClick={async function () {
                             await enterRaffle({
                                 onSuccess: handleSuccsess,
                                 onError: (error) => console.log(error),
                             })
                         }}
+                        disabled={isLoading || isFetching}
                     >
-                        Enter raffle
+                        {isLoading || isFetching ? (
+                            <div className="animate-spin spinner-border h-8 w-8 border-b-2 rounded-full"></div>
+                        ) : (
+                            <div>Enter Raffle</div>
+                        )}
                     </button>
-                    Entrance fee: {ethers.utils.formatUnits(entranceFee, "ether")} ETH Number of
-                    Players: {numPLayers}
-                    Recent Winner: {recentWinner}
+                    <div>
+                        Entrance fee: {ethers.utils.formatUnits(entranceFee, "ether")} ETH Number
+                        of
+                    </div>
+                    <div>Players: {numPLayers}</div>
+                    <div>Recent Winner: {recentWinner}</div>
                 </div>
             ) : (
                 <div>No Raffle Address Detected!</div>
