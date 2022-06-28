@@ -10,6 +10,8 @@ export default function LotteryEntrance() {
     const chainId = parseInt(chainIdHex)
     const raffleAddress = chainId in contractAddresses ? contractAddresses[chainId][0] : null
     const [entranceFee, setEntranceFee] = useState("0")
+    const [numPLayers, setNumPLayers] = useState("0")
+    const [recentWinner, setRecentWinner] = useState("0")
 
     const dispatch = useNotification()
 
@@ -28,9 +30,27 @@ export default function LotteryEntrance() {
         params: {},
     })
 
+    const { runContractFunction: getNumberOfPlayers } = useWeb3Contract({
+        abi: abi,
+        contractAddress: raffleAddress, // specify the networkId
+        functionName: "getNumberOfPlayers",
+        params: {},
+    })
+
+    const { runContractFunction: getRecentWinner } = useWeb3Contract({
+        abi: abi,
+        contractAddress: raffleAddress, // specify the networkId
+        functionName: "getRecentWinner",
+        params: {},
+    })
+
     async function updateUiValues() {
         const entranceFeeFromCall = (await getEntranceFee()).toString()
+        const numPlayersFromCall = (await getNumberOfPlayers()).toString()
+        const recentWinnerFromCall = await getRecentWinner()
         setEntranceFee(entranceFeeFromCall)
+        setNumPLayers(numPlayersFromCall)
+        setRecentWinner(recentWinnerFromCall)
     }
 
     useEffect(() => {
@@ -42,6 +62,7 @@ export default function LotteryEntrance() {
     const handleSuccsess = async function (tx) {
         await tx.wait(1)
         handleNewNotification(tx)
+        updateUiValues()
     }
 
     const handleNewNotification = function () {
@@ -69,7 +90,9 @@ export default function LotteryEntrance() {
                     >
                         Enter raffle
                     </button>
-                    Entrance fee: {ethers.utils.formatUnits(entranceFee, "ether")} ETH
+                    Entrance fee: {ethers.utils.formatUnits(entranceFee, "ether")} ETH Number of
+                    Players: {numPLayers}
+                    Recent Winner: {recentWinner}
                 </div>
             ) : (
                 <div>No Raffle Address Detected!</div>
